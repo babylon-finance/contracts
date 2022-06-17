@@ -1,4 +1,6 @@
 const { ethers } = require('hardhat');
+const { tokens, holders } = require('../../lib/addresses');
+
 /**
  * Advance blockchain time by value. Has a random chance to deviate by 1 second.
  * Consider this during tests. Use `closeTo`.
@@ -90,6 +92,37 @@ function skipIfFast() {
   return !!FAST ? describe.skip : describe;
 }
 
+function getTokenName(tokenAddress) {
+  for ([tokenName, address] of Object.entries(tokens)) {
+    if (address === tokenAddress) {
+      return tokenName;
+    }
+  }
+
+  throw `No token name found for address ${tokenAddress}`;
+}
+
+function getHolderForTokenAddress(tokenAddress) {
+  return getHolderForToken(getTokenName(tokenAddress));
+}
+
+function getHolderForToken(token) {
+  const tokenHolders = holders;
+  if (token in tokenHolders) {
+    return tokenHolders[token];
+  }
+
+  throw `No holder defined for token ${token}`;
+}
+
+function getTokenAddress(tokenName) {
+  if (tokenName in tokens) {
+    return tokens[tokenName];
+  }
+
+  throw `No address defined for token ${tokenName}`;
+}
+
 module.exports = {
   pick,
   skipIfFast,
@@ -106,6 +139,10 @@ module.exports = {
   eth,
   normalizeDecimals,
   enums,
+  getHolderForToken,
+  getHolderForTokenAddress,
+  getTokenName,
+  getTokenAddress,
   proposalState: enums('Pending', 'Active', 'Canceled', 'Defeated', 'Succeeded', 'Queued', 'Expired', 'Executed'),
   voteType: enums('Against', 'For', 'Abstain'),
 };
